@@ -1,4 +1,4 @@
-// import NotFound from '@app/components/NotFound/NotFound'
+
 import Admin from './pages/Admin'
 import Auth from './pages/Auth'
 import Client from './pages/Client'

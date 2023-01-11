@@ -1,18 +1,9 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Form, Input, Popconfirm, Table } from 'antd';
+import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd';
 import '../Manager.scss'
-import { getAllUsers } from "../../../config/apiService";
-const EditableContext = React.createContext(null);
-const EditableRow = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
+import { addAuthor, deleteAuthor, getAllAuthors } from "../../../config/apiService";
+import TextArea from 'antd/es/input/TextArea';
+import { toast } from "react-toastify";
 const EditableCell = ({
   title,
   editable,
@@ -24,30 +15,11 @@ const EditableCell = ({
 }) => {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
-  const form = useContext(EditableContext);
   useEffect(() => {
     if (editing) {
       inputRef.current.focus();
     }
   }, [editing]);
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
-  };
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleSave({
-        ...record,
-        ...values,
-      });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
   let childNode = children;
   if (editable) {
     childNode = editing ? (
@@ -63,7 +35,6 @@ const EditableCell = ({
           },
         ]}
       >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
       </Form.Item>
     ) : (
       <div
@@ -71,7 +42,6 @@ const EditableCell = ({
         style={{
           paddingRight: 24,
         }}
-        onClick={toggleEdit}
       >
         {children}
       </div>
@@ -81,18 +51,29 @@ const EditableCell = ({
 };
 const Author = () => {
   const [dataSource, setDataSource] = useState([]);
-
-  const [count, setCount] = useState(2);
-  const handleDelete = (key) => {
-    const newData = dataSource ? dataSource.filter((item) => item.key !== key) :[];
-    setDataSource(newData);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [form] = Form.useForm()
+  const showModal = () => {
+    setIsModalOpen(!isModalOpen)
+  }
+  const handleDelete = async(key) => {
+    let res = await deleteAuthor(key?._id)
+    if (res && res.status === 200) {
+      toast.success(res?.message);
+      handleData();
+    } else {
+      toast.error("Delete thất bại");
+    }
   };
-  useEffect(async() => {
-    let res = await getAllUsers()
+  useEffect(() => {
+    handleData()
+  }, []);
+  const handleData = async() =>{
+    let res = await getAllAuthors()
     if (res && res.status === 200) {
         setDataSource(res?.data)
     }
-  }, []);
+  }
   const defaultColumns = [
     {
       title: 'name',
@@ -104,26 +85,16 @@ const Author = () => {
       title: 'operation',
       dataIndex: 'operation',
       render: (_, record) =>
-      dataSource && dataSource.length >= 1 ? (
+        dataSource.length >= 1 ? (
           <>
             <a style={{marginRight:"10px"}}>Edit</a> 
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
+            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
             <a style={{color:"red"}}>Delete</a>
           </Popconfirm>
           </>
         ) : null,
     },
   ];
-  const handleAdd = () => {
-    const newData = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: '32',
-      address: `London, Park Lane no. ${count}`,
-    };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
-  };
   const handleSave = (row) => {
     const newData = [...dataSource];
     const index = newData.findIndex((item) => row.key === item.key);
@@ -136,7 +107,7 @@ const Author = () => {
   };
   const components = {
     body: {
-      row: EditableRow,
+    //   row: EditableRow,
       cell: EditableCell,
     },
   };
@@ -155,16 +126,28 @@ const Author = () => {
       }),
     };
   });
+  const onFinish = async(values) => {
+    let res = await addAuthor(values)
+    if (res && res.status === 200) {
+        showModal()
+        toast.success(res.message);
+        handleData()
+    }
+    else{
+        toast.error(res.message);
+    }
+
+  }
   return (
     <div>
       <Button
-        onClick={handleAdd}
+        onClick={showModal}
         type="primary"
         style={{
           marginBottom: 16,
         }}
       >
-        Add a row
+        Add new
       </Button>
       <Table
         components={components}
@@ -173,6 +156,39 @@ const Author = () => {
         dataSource={dataSource}
         columns={columns}
       />
+      <Modal footer={''} open={isModalOpen} title="Reason for revert:" onCancel={showModal}>
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          onFinish={onFinish}
+        >
+          <Form.Item
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: 'Please type your reason!',
+              },
+            ]}
+          >
+            <Input placeholder="Name" rows={4} />
+          </Form.Item>
+          <Form.Item>
+            <Button htmlType="submit" type="primary">
+              Submit
+            </Button>
+            <Button
+              style={{
+                margin: '0 8px',
+              }}
+              onClick={showModal}
+            >
+              Cancel
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

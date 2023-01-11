@@ -19,7 +19,10 @@ const authorController = {
   getAllAuthors: async (req, res) => {
     try {
       const authors = await Author.find();
-      res.status(200).json(authors);
+      res.json({
+        status: 200,
+        data: authors
+      });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -51,7 +54,10 @@ const authorController = {
     try {
       await Article.updateMany({ author: req.params.id }, { author: null });
       await Author.findByIdAndDelete(req.params.id);
-      res.status(200).json("Deleted successfully!");
+      res.json({
+        status: 200,
+        message: "Deleted successfully",
+      });
     } catch (err) {
       res.status(500).json(err);
     }

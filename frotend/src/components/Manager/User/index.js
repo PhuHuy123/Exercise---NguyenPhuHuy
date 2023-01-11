@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd';
-import '../Manager.scss'
-import { addUser, getAllUsers } from "../../../config/apiService";
-import TextArea from 'antd/es/input/TextArea';
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Button, Form, Input, Modal, Popconfirm, Table } from "antd";
+import "../Manager.scss";
+import { addUser, getAllUsers, deleteUser } from "../../../config/apiService";
+import TextArea from "antd/es/input/TextArea";
 import { toast } from "react-toastify";
 const EditableCell = ({
   title,
@@ -20,23 +20,7 @@ const EditableCell = ({
       inputRef.current.focus();
     }
   }, [editing]);
-//     setEditing(!editing);
-//     form.setFieldsValue({
-//       [dataIndex]: record[dataIndex],
-//     });
-//   };
-//   const save = async () => {
-//     try {
-//     //   const values = await form.validateFields();
-//     //   toggleEdit();
-//       handleSave({
-//         ...record,
-//         ...values,
-//       });
-//     } catch (errInfo) {
-//       console.log('Save failed:', errInfo);
-//     }
-//   };
+
   let childNode = children;
   if (editable) {
     childNode = editing ? (
@@ -51,8 +35,7 @@ const EditableCell = ({
             message: `${title} is required.`,
           },
         ]}
-      >
-      </Form.Item>
+      ></Form.Item>
     ) : (
       <div
         className="editable-cell-value-wrap"
@@ -68,48 +51,59 @@ const EditableCell = ({
 };
 const User = () => {
   const [dataSource, setDataSource] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
   const showModal = () => {
-    setIsModalOpen(!isModalOpen)
-  }
-  const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
+    setIsModalOpen(!isModalOpen);
   };
-  useEffect(async() => {
-    let res = await getAllUsers()
+  const handleDelete = async(key) => {
+    let res = await deleteUser(key?._id)
     if (res && res.status === 200) {
-        setDataSource(res?.data)
+      toast.success(res?.message);
+      handleData();
+    } else {
+      toast.error("Delete thất bại");
     }
+  };
+  useEffect(() => {
+    handleData();
   }, []);
+  const handleData = async () => {
+    let res = await getAllUsers();
+    if (res && res.status === 200) {
+      setDataSource(res?.data);
+    }
+  };
   const defaultColumns = [
     {
-      title: 'name',
-      dataIndex: 'name',
-      width: '30%',
+      title: "name",
+      dataIndex: "name",
+      width: "30%",
       editable: true,
     },
     {
-      title: 'email',
-      dataIndex: 'email',
-      width: '40%',
+      title: "email",
+      dataIndex: "email",
+      width: "40%",
     },
     {
-        title: 'role',
-        dataIndex: 'role',
-        width: '10%',
-      },
+      title: "role",
+      dataIndex: "role",
+      width: "10%",
+    },
     {
       title: 'operation',
       dataIndex: 'operation',
       render: (_, record) =>
         dataSource.length >= 1 ? (
           <>
-            <a style={{marginRight:"10px"}}>Edit</a> 
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-            <a style={{color:"red"}}>Delete</a>
-          </Popconfirm>
+            <a style={{ marginRight: "10px" }}>Edit</a>
+            <Popconfirm
+              title="Sure to delete?"
+              onConfirm={() => handleDelete(record)}
+            >
+              <a style={{ color: "red" }}>Delete</a>
+            </Popconfirm>
           </>
         ) : null,
     },
@@ -126,7 +120,7 @@ const User = () => {
   };
   const components = {
     body: {
-    //   row: EditableRow,
+      //   row: EditableRow,
       cell: EditableCell,
     },
   };
@@ -145,18 +139,16 @@ const User = () => {
       }),
     };
   });
-  const onFinish = async(values) => {
-    let res = await addUser(values)
+  const onFinish = async (values) => {
+    let res = await addUser(values);
     if (res && res.status === 200) {
-        showModal()
-        toast.success(res.message);
-        setDataSource(res?.data)
+      showModal();
+      toast.success(res?.message);
+      handleData()
+    } else {
+      toast.error(res?.message);
     }
-    else{
-        toast.success(res.message);
-    }
-
-  }
+  };
   return (
     <div>
       <Button
@@ -170,12 +162,17 @@ const User = () => {
       </Button>
       <Table
         components={components}
-        rowClassName={() => 'editable-row'}
+        rowClassName={() => "editable-row"}
         bordered
         dataSource={dataSource}
         columns={columns}
       />
-      <Modal footer={''} open={isModalOpen} title="Reason for revert:" onCancel={showModal}>
+      <Modal
+        footer={""}
+        open={isModalOpen}
+        title="Reason for revert:"
+        onCancel={showModal}
+      >
         <Form
           form={form}
           layout="vertical"
@@ -187,7 +184,7 @@ const User = () => {
             rules={[
               {
                 required: true,
-                message: 'Please type your reason!',
+                message: "Please type your reason!",
               },
             ]}
           >
@@ -198,7 +195,7 @@ const User = () => {
             rules={[
               {
                 required: true,
-                message: 'Please type your reason!',
+                message: "Please type your reason!",
               },
             ]}
           >
@@ -209,18 +206,18 @@ const User = () => {
             rules={[
               {
                 required: true,
-                message: 'Please type your reason!',
+                message: "Please type your reason!",
               },
             ]}
           >
-            <Input type='password' placeholder="Password" rows={4} />
+            <Input type="password" placeholder="Password" rows={4} />
           </Form.Item>
           <Form.Item
             name="role"
             rules={[
               {
                 required: true,
-                message: 'Please type your reason!',
+                message: "Please type your reason!",
               },
             ]}
           >
@@ -232,7 +229,7 @@ const User = () => {
             </Button>
             <Button
               style={{
-                margin: '0 8px',
+                margin: "0 8px",
               }}
               onClick={showModal}
             >

@@ -54,7 +54,10 @@ const userController = {
           message: "Tạo user thành công",
         });
       } else {
-        res.status(422).json("Email đã tồn tại");
+        res.json({
+          status: 422,
+          message: "Email đã tồn tại",
+        });
       }
     } catch (err) {
       res.status(500).json(err);
@@ -99,7 +102,10 @@ const userController = {
   deleteUser: async (req, res) => {
     try {
       await User.findByIdAndDelete(req.params.id);
-      res.status(200).json("Deleted successfully!");
+      res.json({
+        status: 200,
+        message: "Deleted successfully",
+      });
     } catch (err) {
       res.status(500).json(err);
     }

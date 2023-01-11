@@ -30,6 +30,16 @@ const postAuthor = (data) => {
   return axios.post(`/author`, data);
 };
 
+const deleteUser = (id) => {
+  return axios.delete(`/user/${id}`);
+};
+const deleteAuthor = (id) => {
+  return axios.delete(`/author/${id}`);
+};
+const deleteArticle = (id) => {
+  return axios.delete(`/article/${id}`);
+};
+
 export {
   loginUser,
   postAuthor,
@@ -39,4 +49,7 @@ export {
   getAllAuthors,
   addAArticle,
   addAuthor,
+  deleteUser,
+  deleteArticle,
+  deleteAuthor,
 };

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd';
 import '../Manager.scss'
-import { addAArticle, getAllArticles } from "../../../config/apiService";
+import { addAArticle, deleteArticle, getAllArticles } from "../../../config/apiService";
 import TextArea from 'antd/es/input/TextArea';
 import { toast } from "react-toastify";
 const EditableCell = ({
@@ -49,23 +49,31 @@ const EditableCell = ({
   }
   return <td {...restProps}>{childNode}</td>;
 };
-const User = () => {
+const Article = () => {
   const [dataSource, setDataSource] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [form] = Form.useForm()
   const showModal = () => {
     setIsModalOpen(!isModalOpen)
   }
-  const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
+  const handleDelete = async(key) => {
+    let res = await deleteArticle(key?._id)
+    if (res && res.status === 200) {
+      toast.success(res?.message);
+      handleData();
+    } else {
+      toast.error("Delete thất bại");
+    }
   };
-  useEffect(async() => {
+  useEffect(() => {
+    handleData()
+  }, []);
+  const handleData = async() =>{
     let res = await getAllArticles()
     if (res && res.status === 200) {
         setDataSource(res?.data)
     }
-  }, []);
+  }
   const defaultColumns = [
     {
       title: 'title',
@@ -85,7 +93,7 @@ const User = () => {
         dataSource.length >= 1 ? (
           <>
             <a style={{marginRight:"10px"}}>Edit</a> 
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
+            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
             <a style={{color:"red"}}>Delete</a>
           </Popconfirm>
           </>
@@ -128,10 +136,10 @@ const User = () => {
     if (res && res.status === 200) {
         showModal()
         toast.success(res.message);
-        setDataSource(res?.data)
+        handleData()
     }
     else{
-        toast.success(res.message);
+        toast.error(res.message);
     }
 
   }
@@ -200,4 +208,4 @@ const User = () => {
     </div>
   );
 };
-export default User;
+export default Article;
