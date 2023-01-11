@@ -13,5 +13,5 @@ Install
     + yarn start
 
 Account:
-- admin: admin@gmail.com password: password
-- user: user@gmail.com password: password
+- admin: admin@gmail.com password: 111111
+- user: user@gmail.com password: 111111
