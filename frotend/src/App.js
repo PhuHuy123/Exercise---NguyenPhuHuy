@@ -2,9 +2,7 @@
 import Admin from './pages/Admin'
 import Auth from './pages/Auth'
 import Client from './pages/Client'
-// import ResetPassword from '@app/pages/Auth/ResetPassword'
 import { Routes, Route } from 'react-router-dom'
-// import NotExist from './components/NotFound/NotExist'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

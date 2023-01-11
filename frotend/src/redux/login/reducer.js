@@ -27,6 +27,7 @@ const loginReducer = (state = INITIAL_STATE, action) => {
         loading: true,
         error: null,
         response: null,
+        isLoggedIn: false
       }
     }
 
@@ -34,7 +35,8 @@ const loginReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: false,
-        isLoggedIn: true,
+        isLoggedIn: action.payload.status === 200 ? true : false,
+        role: action.payload?.data?.role,
         response: action.payload,
         idToken: localStorage.getItem('token') || '',
       }
@@ -45,7 +47,15 @@ const loginReducer = (state = INITIAL_STATE, action) => {
         error: action.payload,
         loading: false,
       }
-
+      case GET_USER_BY_TOKEN: {
+        return {
+          ...state,
+          loading: true,
+          error: null,
+          response: null,
+          isLoggedIn: false
+        }
+      }
     case GET_USER_BY_TOKEN_SUCCESS:
       return {
         ...state,
@@ -68,6 +78,8 @@ const loginReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         isLoggedIn: false,
+        data: [],
+        role: null,
       }
     }
     default:

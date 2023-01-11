@@ -1,4 +1,5 @@
 import LoginPage from './Login'
+import SignupPage from './Signup'
 import { Routes, Route } from 'react-router-dom'
 const Auth = () => {
   
@@ -13,6 +14,7 @@ const Auth = () => {
         ) : ( */}
           <Routes>
             <Route element={<LoginPage />} path="login" />
+            <Route element={<SignupPage />} path="signup" />
             {/* <Route element={<>Register</>} path="register" />
             <Route element={<NotExist />} path="*" /> */}
           </Routes>

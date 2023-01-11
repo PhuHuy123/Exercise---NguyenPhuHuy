@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import './Menu.scss'
 import {
   AppstoreOutlined,
@@ -11,9 +11,17 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { Menu } from "antd";
+import { useDispatch } from "react-redux";
+import { userLogOut } from "../../redux/login/actions";
 
 const MenuBar = () => {
+  const dispatch = useDispatch();
+  const userLogoutSaga = useCallback(
+    () => dispatch(userLogOut()),
+    [dispatch]
+  );
   const handleLogOut = () => {
+    userLogoutSaga()
     localStorage.removeItem("token");
   };
   return (

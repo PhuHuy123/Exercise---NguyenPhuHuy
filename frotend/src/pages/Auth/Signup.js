@@ -2,47 +2,22 @@ import React, { useCallback, useEffect } from "react";
 import { Button, Checkbox, Form, Input, Row, Col } from "antd";
 import "./Login.scss";
 import { toast } from "react-toastify";
-import { loginUser } from "../../config/apiService";
+import { addUser } from "../../config/apiService";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { getUserLogin } from "../../redux/login/actions";
-const Login = () => {
-  const { isLoggedIn, response } = useSelector((state) => state.login);
-  const dispatch = useDispatch();
-  const userLogin = useCallback(
-    (values) => dispatch(getUserLogin(values)),
-    [dispatch]
-  );
+
+const Signup = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    if(isLoggedIn){
-      if (response && response.status) {
-        if (response.status === 200) {
-          toast.success(response.message);
-          // localStorage.setItem("token", response?.data?.token);
-          if (response?.data?.role === "1") {
-            navigate("/admin");
-          } else {
-            navigate("/client");
-          }
-        } else {
-          toast.error(response?.message);
-        }
-      }
-    }
-  }, [response]);
   const onFinish = async (values) => {
-    let res = await userLogin(values);
+    if(values.password === values.passwordConfirm){
+      let res = await addUser(values);
     if (res && res.status === 200) {
       toast.success(res.message);
-      localStorage.setItem("token", res?.data?.token);
-      if (res?.data?.role === "1") {
-        navigate("/admin");
-      } else {
-        navigate("/client");
-      }
+        navigate("/auth/login");
     } else {
       toast.error(res.message);
+    }
+    }else{
+      toast.error("password không đúng");
     }
   };
   const onFinishFailed = (errorInfo) => {
@@ -51,7 +26,7 @@ const Login = () => {
   return (
     <Row justify="center" className="login">
       <Col className="login-parrent" md={8} sm={18} xs={20}>
-        <h2>Login</h2>
+        <h2>Sign up</h2>
         <Form
           name="basic"
           labelCol={{
@@ -68,6 +43,18 @@ const Login = () => {
           autoComplete="off"
         >
           <Form.Item
+            label="Name"
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: "Please input your name!",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
             label="Email"
             name="email"
             rules={[
@@ -79,7 +66,6 @@ const Login = () => {
           >
             <Input />
           </Form.Item>
-
           <Form.Item
             label="Password"
             name="password"
@@ -92,16 +78,17 @@ const Login = () => {
           >
             <Input.Password />
           </Form.Item>
-
           <Form.Item
-            name="remember"
-            valuePropName="checked"
-            wrapperCol={{
-              offset: 5,
-              span: 16,
-            }}
+            label="Confirm password"
+            name="passwordConfirm"
+            rules={[
+              {
+                required: true,
+                message: "Please input your Confirm password!",
+              },
+            ]}
           >
-            <Checkbox>Remember me</Checkbox>
+            <Input.Password />
           </Form.Item>
 
           <Form.Item
@@ -114,10 +101,10 @@ const Login = () => {
               Submit
             </Button>
           </Form.Item>
-          <Link to='/auth/signup'>Sign up</Link>
+          <Link to="/auth/login">Login</Link>
         </Form>
       </Col>
     </Row>
   );
 };
-export default Login;
+export default Signup;
